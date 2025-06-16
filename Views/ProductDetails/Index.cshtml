@@ -1,0 +1,49 @@
+﻿@model Demo.Models.PaginatedList<Product>
+@{
+    ViewData["Title"] = "Product Details";
+}
+@using System.Security.Claims
+<h2>Product Details</h2>
+
+@{
+var userEmail = User.FindFirstValue(ClaimTypes.Email);
+}
+@if (string.IsNullOrEmpty(userEmail))
+{
+    <div class="auth-links d-flex justify-content-center gap-3 mb-4">
+        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary px-4 py-2">Login</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success px-4 py-2">Register</a>
+    </div>
+}
+<div class="container-fluid mt-4">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card shadow-sm">
+                    <img class="card-img-top" src="~/images/@item.Images.FirstOrDefault()?.ImageUrl" alt="@item.Name" height="200">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                        <p class="card-text">@item.Category</p>
+                        <p class="card-text">@item.Price.ToString("C")</p>
+                        <p class="card-text">Stock: @item.StockQuantity</p>
+                        <a href="@Url.Action("Details", "ProductDetails", new { id = item.ProductId })" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<br />
+<div class="text-center">
+    Page @(Model.PageIndex) of @(Model.TotalPages)
+    <div class="btn-group">
+        <a asp-action="Index"
+           asp-route-pageNumber="@(Model.PageIndex - 1)"
+           class="btn btn-outline-primary @(Model.HasPreviousPage ? "" : "disabled")">Previous</a>
+
+        <a asp-action="Index"
+           asp-route-pageNumber="@(Model.PageIndex + 1)"
+           class="btn btn-outline-primary @(Model.HasNextPage ? "" : "disabled")">Next</a>
+    </div>
+</div>

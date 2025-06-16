@@ -1,0 +1,129 @@
+﻿@model Demo.Models.Product
+
+<style>
+    .carousel-item img {
+        height: 400px;
+        object-fit: cover;
+    }
+
+    #productCarousel {
+        position: relative;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Image Carousel -->
+        <div class="col-md-6">
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        @{
+                            var images = Model.Images.ToList(); // Convert to List for indexing
+                        }
+
+                        @for (int i = 0; i < images.Count; i++)
+                        {
+                            var image = images[i];
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="~/images/@image.ImageUrl" class="d-block w-100" alt="@Model.Name">
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Carousel controls -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+
+            }
+            else
+            {
+                <p>No images available.</p>
+            }
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-md-6">
+            <h2>@Model.Name</h2>
+            <h4 class="text-success">@Model.Price.ToString("C")</h4>
+            <p><strong>Category:</strong> @Model.Category</p>
+            <p><strong>Description:</strong> @Model.Description</p>
+            <p><strong>Stock:</strong> @Model.StockQuantity</p>
+
+            <a href="@Url.Action("Index", "ProductDetails")" class="btn btn-secondary mt-3">Back to Products</a>
+        </div>
+    </div>
+</div>
+
+<hr />
+<div class="mt-5">
+    <h4>User Reviews</h4>
+
+    @if (Model.Reviews != null && Model.Reviews.Any())
+    {
+        foreach (var review in Model.Reviews.OrderByDescending(r => r.DatePosted))
+        {
+            <div class="border rounded p-3 mb-3">
+                <strong>@review.ReviewerName</strong>
+                <span class="text-warning">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")"></i>
+                    }
+                </span>
+                <p class="mb-1">@review.Comment</p>
+                <small class="text-muted">@review.DatePosted.ToShortDateString()</small>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No reviews yet. Be the first to review!</p>
+    }
+
+    <hr />
+    <h2>Leave a Review</h2>
+
+    <form asp-action="AddReview" asp-controller="ProductDetails" method="post">
+        <input type="hidden" asp-for="ProductId" />
+
+        <div class="mb-3">
+            <label asp-for="@Model.Review.ReviewerName" class="form-label"></label>
+            <input asp-for="@Model.Review.ReviewerName" class="form-control" />
+            <span asp-validation-for="@Model.Review.ReviewerName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="@Model.Review.Rating" class="form-label"></label>
+            <select asp-for="@Model.Review.Rating" asp-items="@Model.Ratings" class="form-select">
+            </select>
+            <span asp-validation-for="@Model.Review.Rating" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="@Model.Review.Comment" class="form-label"></label>
+            <textarea asp-for="@Model.Review.Comment" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="@Model.Review.Comment" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
